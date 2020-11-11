@@ -62,6 +62,19 @@ class VotingTestCase(BaseTestCase):
         user.save()
         return user
 
+    def test_voting_toString(self):
+        v = self.create_voting()
+        self.assertEquals(str(v), "test voting")
+        self.assertEquals(str(v.question), "test question")
+        self.assertEquals(str(v.question.options.all()[0]), "option 1 (2)")
+
+    def test_update_voting_400(self):
+        v = self.create_voting()
+        data = {} #El campo action es requerido en la request
+        self.login()
+        response = self.client.put('/voting/{}/'.format(v.pk), data, format= 'json')
+        self.assertEquals(response.status_code, 400)
+
     def store_votes(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
         voter = voters.pop()
