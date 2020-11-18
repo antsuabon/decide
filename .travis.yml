@@ -15,6 +15,8 @@ install:
   - pip install -r requirements.txt
   - pip install codacy-coverage
   - pip install -U selenium
+addons:
+  chrome: stable  
 script:
   - cd decide
   - cp local_settings.travis.py local_settings.py  
