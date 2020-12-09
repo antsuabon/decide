@@ -30,10 +30,16 @@ class QuestionOption(models.Model):
 class QuestionOrder(models.Model):
     question = models.ForeignKey(Question, related_name='order_options', on_delete=models.CASCADE)
     order_number = models.PositiveIntegerField(blank=True, null=True)
+    number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
+    def save(self):
+        if not self.number:
+            self.number = self.question.order_options.count() + 2
+        return super().save()
+
     def __str__(self):
-        return '{} ({})'.format(self.option, self.order_number)
+        return '{} ({})'.format(self.option, self.number)
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
@@ -110,28 +116,31 @@ class Voting(models.Model):
         order_options = self.question.order_options.all()
 
         opts = []
-        for opt in options:
-            if isinstance(tally, list):
-                votes = tally.count(opt.number)
-            else:
-                votes = 0
-            opts.append({
-                'option': opt.option,
-                'number': opt.number,
-                'votes': votes
-            })
+        if options.count()!=0:
+            for opt in options:
+                if isinstance(tally, list):
+                    votes = tally.count(opt.number)
+                else:
+                   votes = 0
+                opts.append({
+                    'option': opt.option,
+                    'number': opt.number,
+                    'votes': votes
+                })
 
         ords = []
-        for ord in order_options:
-            if isinstance(tally, list):
-                votes = tally.count(ord.order)
-            else:
-                votes = 0
-            ords.append({
-                'option': ord.option,
-                'order_number': ord.order_number,
-                'votes': votes
-            })    
+        if order_options.count()!=0:
+            for ord in order_options:
+                if isinstance(tally, list):
+                    votes = tally.count(ord.order_number)
+                else:
+                    votes = 0
+                ords.append({
+                    'option': ord.option,
+                    'number': ord.number,
+                    'order_number': ord.order_number,
+                    'votes': votes
+                })    
 
         data = { 'type': 'IDENTITY', 'options': opts, 'order_options':ords }
         postp = mods.post('postproc', json=data)

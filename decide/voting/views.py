@@ -40,7 +40,7 @@ class VotingView(generics.ListCreateAPIView):
             opt.save()
 
         for q_ord, q_opt in enumerate(request.data.get('question_ord')):
-            ord = QuestionOrder(question=question, option=q_opt, order_number=q_ord)
+            ord = QuestionOrder(question=question, option=q_opt, order_number=q_ord, number=idx)
             ord.save()
 
         voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'),
