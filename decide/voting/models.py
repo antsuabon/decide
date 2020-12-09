@@ -36,6 +36,8 @@ class QuestionOrder(models.Model):
     def save(self):
         if not self.number:
             self.number = self.question.order_options.count() + 2
+        if not self.order_number:
+            self.order_number = self.question.order_options.count() + 2
         return super().save()
 
     def __str__(self):
