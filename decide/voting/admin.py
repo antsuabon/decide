@@ -36,7 +36,6 @@ class QuestionOrderInline(admin.TabularInline):
 
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [QuestionOptionInline, QuestionOrderInline]
-    
 
 
 class VotingAdmin(admin.ModelAdmin):
