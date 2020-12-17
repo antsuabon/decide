@@ -19,7 +19,8 @@ addons:
   chrome: stable  
 script:
   - cd decide
-  - coverage run --branch --source=. ./manage.py test --keepdb
+  - cp local_settings.travis.py local_settings.py  
+  - coverage run --branch --source=. ./manage.py test --keepdb --with-xunit
   - coverage xml
   - python-codacy-coverage -r coverage.xml
 deploy:
