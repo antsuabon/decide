@@ -23,6 +23,11 @@ script:
   - coverage run --branch --source=. ./manage.py test --keepdb --with-xunit
   - coverage xml
   - python-codacy-coverage -r coverage.xml
+deploy:
+  provider: heroku
+  app: decide-edubotdom
+  strategy: git
+  api_key: $HEROKU_AUTH_TOKEN
 notifications:
   email:
     recipients:
