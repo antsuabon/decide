@@ -13,7 +13,7 @@ from census.models import Census
 from mixnet.mixcrypt import ElGamal
 from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
-from voting.models import Voting, Question, QuestionOption
+from voting.models import Voting, Question, QuestionOption, QuestionOrder
 
 
 class VotingTestCase(BaseTestCase):
@@ -38,6 +38,22 @@ class VotingTestCase(BaseTestCase):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
             opt.save()
         v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
+
+    def create_order_voting(self):
+        q = Question(desc='test ordering question')
+        q.save()
+        for i in range(5):
+            opt = QuestionOrder(question=q, option='ordering option {}'.format(i+1), order_number='{}'.format(i+1))
+            opt.save()
+        v = Voting(name='test ordering voting', question=q)
         v.save()
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
@@ -138,7 +154,26 @@ class VotingTestCase(BaseTestCase):
             'name': 'Example',
             'desc': 'Description example',
             'question': 'I want a ',
-            'question_opt': ['cat', 'dog', 'horse']
+            'question_opt': ['cat', 'dog', 'horse'],
+            'question_ord': []
+        }
+
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+    def test_create_ordering_voting_from_api(self):
+        data = {'name': 'Example'}
+
+        self.login()
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'name': 'Example',
+            'desc': 'Description example',
+            'question': 'I want a ',
+            'question_opt': [],
+            'question_ord': ['cat', 'dog', 'horse']
         }
 
         response = self.client.post('/voting/', data, format='json')
