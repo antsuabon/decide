@@ -1,25 +1,41 @@
 dist: xenial
 services:
 - postgresql
+sudo: required
 addons:
   chrome: stable
+  postgresql: "9.4"
 before_script:
-- psql -U postgres -c "create user decide password 'decide'"
-- psql -U postgres -c "create database test_decide owner decide"
-- psql -U postgres -c "ALTER USER decide CREATEDB"
+  - psql -U postgres -c "create user decide password 'decide'"
+  - psql -U postgres -c "create database test_decide owner decide"
+  - psql -U postgres -c "ALTER USER decide CREATEDB"
+  - wget "https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz"
+  - tar xfz geckodriver-v0.24.0-linux64.tar.gz
+  - sudo mv geckodriver /usr/local/bin
+  - 'export DISPLAY=:99.0'
+  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+  
+  - wget -N http://chromedriver.storage.googleapis.com/87.0.4280.87/chromedriver_linux64.zip -P ~/
+  - unzip ~/chromedriver_linux64.zip -d ~/
+  - rm ~/chromedriver_linux64.zip
+  - sudo mv -f ~/chromedriver /usr/local/share/
+  - sudo chmod +x /usr/local/share/chromedriver
+  - sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
+  
 language: python
 python:
-- '3.6'
+  - "3.6"
 install:
-- pip install -r requirements.txt
-- pip install codacy-coverage
-- pip install -U selenium
+  - pip install -r requirements.txt
+  - pip install codacy-coverage
+  - pip install webdriver-manager
+  
 script:
-- cd decide
-- cp local_settings.travis.py local_settings.py
-- coverage run --branch --source=. ./manage.py test mixnet --keepdb
-- coverage xml
-- python-codacy-coverage -r coverage.xml
+  - cd decide
+  - sudo apt-get install firefox
+  - coverage run --branch --source=. ./manage.py test --keepdb --with-xunit
+  - coverage xml
+  - python-codacy-coverage -r coverage.xml
 deploy:
   provider: heroku
   app: decide-edubotdom
@@ -27,16 +43,7 @@ deploy:
   api_key:
     secure: PxVlA7j5kL527f82gATOjG+kGQw1h4fK41K4TuHQE49/Bvgm5hoMO1EzytjvUVp0wQTdTiM8P0G7OX1phvTHTiXwKkV3ojYYRJYUjbl43dJUvi6XBZLc+I6oJNqZ+cHJMmxFiLR+n1XaHDuJSoXHQavoiuIVQ3XnBiU1Egf8i7m0GbO7fh5fvBi1p1+LqEI5gIDOlSe91A8tRhh03PeX2ausognUzvE5FlUmae48nm9UdBSbr0tRfsBT9ACWSHXieiPD6w1/5Jhbe5PIukp57dz0xgks0tbgbkjw5WoiTuGAor37Ss0PjRt3fdMZe1chHIOVeWbJOeq+avS8JBfygaChpaetvYs0XGS6z+ia7JZ9UquzWEMl5aucKdUfhq+gacy/zZyDgHA4cYkh+2my4X+jvibafWm6lbIWtN9fFNhUEepZ8xOlc8y5wcGUTjNhYT3eH9WtnhwkIvltuXxXFsLIA5FelaDsa55qphXnEg4xqvQWqBlvtsnK7ARbP6NAJjNTKymJH7tQlp2iIW5QpyjR88K6EB/nGNG1Ak3zAKOmaNnRyjhBsc2T4887Ms6mUhYjVzle3LYev192SCOR3pf14i6vv399CHEzyaRqZPPOSeveVy9t91o5emR1EEEUbzWiTdfGumWV5DucuC5Z0j+36Qvl4U6U/NbyBVrvpW8=
   on:
-    branch: master
-"""
-  provider: heroku
-  app: decide-edubotdom-develop
-  strategy: git
-  api_key:
-    secure: PxVlA7j5kL527f82gATOjG+kGQw1h4fK41K4TuHQE49/Bvgm5hoMO1EzytjvUVp0wQTdTiM8P0G7OX1phvTHTiXwKkV3ojYYRJYUjbl43dJUvi6XBZLc+I6oJNqZ+cHJMmxFiLR+n1XaHDuJSoXHQavoiuIVQ3XnBiU1Egf8i7m0GbO7fh5fvBi1p1+LqEI5gIDOlSe91A8tRhh03PeX2ausognUzvE5FlUmae48nm9UdBSbr0tRfsBT9ACWSHXieiPD6w1/5Jhbe5PIukp57dz0xgks0tbgbkjw5WoiTuGAor37Ss0PjRt3fdMZe1chHIOVeWbJOeq+avS8JBfygaChpaetvYs0XGS6z+ia7JZ9UquzWEMl5aucKdUfhq+gacy/zZyDgHA4cYkh+2my4X+jvibafWm6lbIWtN9fFNhUEepZ8xOlc8y5wcGUTjNhYT3eH9WtnhwkIvltuXxXFsLIA5FelaDsa55qphXnEg4xqvQWqBlvtsnK7ARbP6NAJjNTKymJH7tQlp2iIW5QpyjR88K6EB/nGNG1Ak3zAKOmaNnRyjhBsc2T4887Ms6mUhYjVzle3LYev192SCOR3pf14i6vv399CHEzyaRqZPPOSeveVy9t91o5emR1EEEUbzWiTdfGumWV5DucuC5Z0j+36Qvl4U6U/NbyBVrvpW8=
-  on:
-    branch: develop
-"""    
+    branch: master   
 notifications:
   email:
     recipients:

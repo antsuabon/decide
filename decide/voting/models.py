@@ -134,7 +134,7 @@ class Voting(models.Model):
         if order_options.count()!=0:
             for order_option in order_options:
                 if isinstance(tally, list):
-                    votes = tally.count(ord.order_number)
+                    votes = tally.count(order_option.order_number)
                 else:
                     votes = 0
                 ords.append({
